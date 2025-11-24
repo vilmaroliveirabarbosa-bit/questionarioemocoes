@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questionário Emocional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #667eea; margin-bottom: 20px; }
+        h2 { color: #764ba2; margin-bottom: 20px; border-bottom: 3px solid #764ba2; padding-bottom: 10px; }
+        p { color: #666; margin-bottom: 15px; line-height: 1.6; }
+        ul { margin-left: 20px; }
+        li { margin: 10px 0; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        
+        .question-text {
+            font-size: 1.2em;
+            color: #333;
+            margin: 20px 0 30px 0;
+            font-weight: 500;
+        }
+        
+        .slider-container {
+            margin: 40px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 3px solid #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            width: 28px;
+            height: 28px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: 3px solid #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .slider::-moz-range-thumb:hover {
+            width: 28px;
+            height: 28px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .slider-labels span:first-child {
+            color: #667eea;
+        }
+        
+        .slider-labels span:last-child {
+            color: #764ba2;
+        }
+        
+        .slider-info {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 15px;
+            font-size: 0.95em;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-secondary { background: #f0f0f0; color: #333; flex: 0.5; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .result-item h3 { color: #333; font-size: 1.1em; margin: 0 0 5px 0; }
+        .result-item .score-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin: 8px 0;
+        }
+        .result-item .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+        }
+        .result-item .percent { text-align: right; color: #667eea; font-weight: 600; font-size: 0.9em; }
+        
+        @media (max-width: 768px) {
+            .card { padding: 20px; }
+            .results-grid { grid-template-columns: 1fr; }
+            .buttons { flex-direction: column; }
+            button { flex: 1; }
+            .slider-container { margin: 30px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- WELCOME -->
+        <div id="welcome" class="screen active">
+            <div class="card">
+                <h1>🌟 Descobra Seus Sentimentos & Necessidades</h1>
+                <p>Este questionário ajuda você a identificar seus estados emocionais mais prevalentes e as necessidades subjacentes.</p>
+                
+                <p><strong>O que você vai descobrir:</strong></p>
+                <ul>
+                    <li>Top 5 Sentimentos/Estados Emocionais</li>
+                    <li>Top 5 Necessidades Principais</li>
+                    <li>Insights personalizados para autoconhecimento</li>
+                </ul>
+                
+                <p style="font-size: 0.95em; color: #999; margin-top: 20px;">⏱️ Tempo: 10-15 minutos | 50 perguntas | Escala de Nem tanto a Sempre</p>
+                
+                <button class="btn-primary" onclick="startQuiz()" style="margin-top: 20px; width: 100%;">Começar →</button>
+            </div>
+        </div>
+
+        <!-- QUIZ -->
+        <div id="quiz" class="screen">
+            <div class="card">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText" style="text-align: center; color: #667eea; font-weight: 600; margin: 0 0 20px 0;"></p>
+                
+                <div class="question-text" id="questionText"></div>
+                
+                <div class="slider-container">
+                    <input type="range" id="sliderAnswer" class="slider" min="0" max="500" value="250" step="1" oninput="updateSliderValue()">
+                    <div class="slider-labels">
+                        <span>Nem tanto</span>
+                        <span id="sliderValue" style="color: #667eea;">2,50</span>
+                        <span>Sempre</span>
+                    </div>
+                    <div class="slider-info" id="sliderInfo">Deslize para escolher seu nível</div>
+                </div>
+                
+                <div class="buttons">
+                    <button id="btnPrev" class="btn-secondary" onclick="previousQuestion()" style="display: none;">← Anterior</button>
+                    <button id="btnNext" class="btn-primary" onclick="nextQuestion()">Próxima →</button>
+                    <button id="btnFinish" class="btn-primary" onclick="finishQuiz()" style="display: none;">Finalizar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div id="results" class="screen">
+            <div class="card">
+                <h1>✨ Seus Resultados</h1>
+                
+                <div class="results-grid">
+                    <div>
+                        <h2>💭 Top 5 Sentimentos</h2>
+                        <div id="emotionsResults"></div>
+                    </div>
+                    <div>
+                        <h2>❤️ Top 5 Necessidades</h2>
+                        <div id="needsResults"></div>
+                    </div>
+                </div>
+                
+                <div class="buttons" style="margin-top: 30px;">
+                    <button class="btn-primary" onclick="restartQuiz()">🔄 Refazer</button>
+                    <button class="btn-primary" onclick="downloadResults()">📥 Baixar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DADOS COMPRIMIDOS - TODAS AS 50 PERGUNTAS
+        const questions = [
+            {texto: "Sei nomear com clareza o que estou sentindo.", sentimentos: [{nome: "Clareza emocional", peso: 5}, {nome: "Confiança", peso: 3}], necessidades: [{nome: "Autoconhecimento", peso: 5}, {nome: "Segurança emocional", peso: 3}]},
+            {texto: "Percebo quando meu corpo reage às emoções.", sentimentos: [{nome: "Consciência corporal", peso: 4}, {nome: "Sensibilidade", peso: 3}], necessidades: [{nome: "Presença / Atenção plena", peso: 4}, {nome: "Autocuidado", peso: 3}]},
+            {texto: "Sinto que minhas emoções fazem sentido.", sentimentos: [{nome: "Validação", peso: 5}, {nome: "Conexão interna", peso: 4}], necessidades: [{nome: "Coerência interna", peso: 5}, {nome: "Compreensão", peso: 4}]},
+            {texto: "Tenho dificuldade de reconhecer o que estou sentindo.", sentimentos: [{nome: "Confusão", peso: 5}, {nome: "Insegurança", peso: 4}], necessidades: [{nome: "Clareza", peso: 5}, {nome: "Apoio emocional", peso: 4}]},
+            {texto: "Quando fico triste, entendo o que está por trás dessa tristeza.", sentimentos: [{nome: "Tristeza compreendida", peso: 4}, {nome: "Reflexão", peso: 4}], necessidades: [{nome: "Clareza emocional", peso: 4}, {nome: "Compreensão", peso: 4}]},
+            {texto: "Tenho medo de ser julgado quando expresso meus sentimentos.", sentimentos: [{nome: "Medo", peso: 5}, {nome: "Vergonha", peso: 4}], necessidades: [{nome: "Aceitação", peso: 5}, {nome: "Pertencimento", peso: 4}]},
+            {texto: "Me sinto à vontade para falar sobre o que estou sentindo.", sentimentos: [{nome: "Liberdade emocional", peso: 5}, {nome: "Confiança", peso: 4}], necessidades: [{nome: "Expressão / Autenticidade", peso: 5}, {nome: "Aceitação", peso: 4}]},
+            {texto: "Me sinto confuso quando tento entender minhas emoções.", sentimentos: [{nome: "Confusão", peso: 5}, {nome: "Frustração", peso: 3}], necessidades: [{nome: "Clareza", peso: 5}, {nome: "Compreensão", peso: 3}]},
+            {texto: "Minhas emoções mudam muito rápido e me desorganizam.", sentimentos: [{nome: "Instabilidade", peso: 5}, {nome: "Insegurança", peso: 4}], necessidades: [{nome: "Equilíbrio interno", peso: 5}, {nome: "Previsibilidade", peso: 4}]},
+            {texto: "Quando estou com raiva, consigo entender o que preciso ou o que foi violado em mim.", sentimentos: [{nome: "Consciência da raiva", peso: 5}, {nome: "Clareza", peso: 4}], necessidades: [{nome: "Respeito próprio", peso: 5}, {nome: "Justiça", peso: 5}]},
+            {texto: "Prefiro esconder o que sinto para evitar conflitos.", sentimentos: [{nome: "Medo de conflito", peso: 5}, {nome: "Autoproteção", peso: 4}], necessidades: [{nome: "Segurança", peso: 5}, {nome: "Paz interior", peso: 4}]},
+            {texto: "Quando algo me magoa, tento esquecer ou ignorar.", sentimentos: [{nome: "Negação", peso: 5}, {nome: "Resistência emocional", peso: 4}], necessidades: [{nome: "Alívio", peso: 5}, {nome: "Autocuidado", peso: 4}]},
+            {texto: "Sentimentos ruins devem ser evitados ao máximo.", sentimentos: [{nome: "Medo do sofrimento", peso: 5}, {nome: "Rigidez emocional", peso: 4}], necessidades: [{nome: "Controle", peso: 5}, {nome: "Estabilidade", peso: 4}]},
+            {texto: "Evito pensar em situações que me deixaram vulnerável.", sentimentos: [{nome: "Vulnerabilidade", peso: 5}, {nome: "Desconforto", peso: 4}], necessidades: [{nome: "Proteção emocional", peso: 5}, {nome: "Autodefesa", peso: 4}]},
+            {texto: "Mostrar emoções é sinal de fraqueza.", sentimentos: [{nome: "Vergonha", peso: 5}, {nome: "Insegurança", peso: 4}], necessidades: [{nome: "Aprovação externa", peso: 5}, {nome: "Autoaceitação", peso: 4}]},
+            {texto: "Ficar sozinho(a) é uma forma de não lidar com emoções difíceis.", sentimentos: [{nome: "Evasão", peso: 5}, {nome: "Medo do confronto interno", peso: 4}], necessidades: [{nome: "Autonomia", peso: 5}, {nome: "Estabilidade emocional", peso: 4}]},
+            {texto: "Prefiro parecer \"bem\" mesmo quando estou mal.", sentimentos: [{nome: "Fingimento", peso: 5}, {nome: "Fadiga emocional", peso: 4}], necessidades: [{nome: "Imagem social", peso: 5}, {nome: "Autenticidade", peso: 4}]},
+            {texto: "Quando me sinto ansioso, tento distrair a mente em vez de entender a causa.", sentimentos: [{nome: "Ansiedade evitada", peso: 5}, {nome: "Desconexão emocional", peso: 4}], necessidades: [{nome: "Tranquilidade", peso: 5}, {nome: "Compreensão interna", peso: 4}]},
+            {texto: "Sinto falta de ser ouvido com atenção.", sentimentos: [{nome: "Frustração", peso: 5}, {nome: "Solidão", peso: 4}], necessidades: [{nome: "Reconhecimento / Escuta", peso: 5}, {nome: "Conexão", peso: 4}]},
+            {texto: "Tenho necessidade de acolhimento emocional.", sentimentos: [{nome: "Carência", peso: 5}, {nome: "Vulnerabilidade", peso: 4}], necessidades: [{nome: "Afeto", peso: 5}, {nome: "Acolhimento", peso: 5}]},
+            {texto: "Preciso de mais tempo para mim mesmo.", sentimentos: [{nome: "Cansaço", peso: 5}, {nome: "Sobrecarga", peso: 4}], necessidades: [{nome: "Autocuidado", peso: 5}, {nome: "Descanso / Espaço pessoal", peso: 4}]},
+            {texto: "Me esforço para ser aceito, mesmo que isso vá contra o que sinto.", sentimentos: [{nome: "Desalinhamento", peso: 5}, {nome: "Desconexão interna", peso: 4}], necessidades: [{nome: "Aceitação", peso: 5}, {nome: "Autenticidade", peso: 4}]},
+            {texto: "Tenho necessidade de reconhecimento, mas raramente recebo.", sentimentos: [{nome: "Desvalorização", peso: 5}, {nome: "Tristeza", peso: 4}], necessidades: [{nome: "Reconhecimento", peso: 5}, {nome: "Validação", peso: 4}]},
+            {texto: "Tenho necessidade de pertencer, mas muitas vezes me sinto deslocado.", sentimentos: [{nome: "Isolamento", peso: 5}, {nome: "Angústia", peso: 5}], necessidades: [{nome: "Pertencimento", peso: 5}, {nome: "Conexão", peso: 5}]},
+            {texto: "Sinto falta de segurança nas minhas relações.", sentimentos: [{nome: "Insegurança", peso: 5}, {nome: "Medo", peso: 4}], necessidades: [{nome: "Segurança emocional", peso: 5}, {nome: "Confiança", peso: 4}]},
+            {texto: "Tenho necessidade de autonomia e liberdade de escolha.", sentimentos: [{nome: "Desejo de independência", peso: 5}, {nome: "Autenticidade", peso: 4}], necessidades: [{nome: "Autonomia", peso: 5}, {nome: "Liberdade", peso: 4}]},
+            {texto: "Preciso sentir que sou útil e que contribuo com algo.", sentimentos: [{nome: "Insatisfação", peso: 5}, {nome: "Desmotivação", peso: 4}], necessidades: [{nome: "Propósito", peso: 5}, {nome: "Reconhecimento / Utilidade", peso: 4}]},
+            {texto: "Sinto falta de conexão emocional nas minhas relações.", sentimentos: [{nome: "Vazio relacional", peso: 5}, {nome: "Frustração", peso: 4}], necessidades: [{nome: "Intimidade", peso: 5}, {nome: "Conexão", peso: 5}]},
+            {texto: "Tenho necessidade de afeto físico (abraços, carinho).", sentimentos: [{nome: "Carência afetiva", peso: 5}, {nome: "Tristeza", peso: 4}], necessidades: [{nome: "Contato físico / Cuidado", peso: 5}, {nome: "Presença emocional", peso: 4}]},
+            {texto: "Preciso de mais momentos de leveza e alegria.", sentimentos: [{nome: "Cansaço emocional", peso: 5}, {nome: "Monotonia", peso: 4}], necessidades: [{nome: "Diversão", peso: 5}, {nome: "Espontaneidade", peso: 4}]},
+            {texto: "Me esforço para atender às necessidades dos outros, mas esqueço das minhas.", sentimentos: [{nome: "Autoabandono", peso: 5}, {nome: "Exaustão", peso: 4}], necessidades: [{nome: "Equilíbrio / Autocuidado", peso: 5}, {nome: "Respeito próprio", peso: 4}]},
+            {texto: "Tenho dificuldade de saber o que realmente preciso.", sentimentos: [{nome: "Confusão interna", peso: 5}, {nome: "Desconexão emocional", peso: 4}], necessidades: [{nome: "Direção", peso: 5}, {nome: "Autoconhecimento", peso: 4}]},
+            {texto: "Às vezes sinto um vazio, mas não sei o que falta.", sentimentos: [{nome: "Vazio existencial", peso: 5}, {nome: "Angústia", peso: 4}], necessidades: [{nome: "Propósito", peso: 5}, {nome: "Realização interna", peso: 4}]},
+            {texto: "Sinto raiva quando minhas necessidades não são levadas em conta.", sentimentos: [{nome: "Raiva", peso: 5}, {nome: "Frustração", peso: 4}], necessidades: [{nome: "Reconhecimento / Justiça", peso: 5}, {nome: "Respeito", peso: 4}]},
+            {texto: "Tenho dificuldade de me perdoar quando cometo erros.", sentimentos: [{nome: "Culpa", peso: 5}, {nome: "Tristeza", peso: 4}], necessidades: [{nome: "Autoaceitação", peso: 5}, {nome: "Compaixão por si", peso: 4}]},
+            {texto: "Me sinto desconectado das pessoas, mesmo quando estou acompanhado.", sentimentos: [{nome: "Isolamento", peso: 5}, {nome: "Solidão", peso: 4}], necessidades: [{nome: "Conexão", peso: 5}, {nome: "Pertencimento", peso: 4}]},
+            {texto: "Sinto culpa por não corresponder às expectativas dos outros.", sentimentos: [{nome: "Culpa", peso: 5}, {nome: "Ansiedade", peso: 4}], necessidades: [{nome: "Autenticidade", peso: 5}, {nome: "Aceitação", peso: 4}]},
+            {texto: "Geralmente guardo ressentimentos por muito tempo.", sentimentos: [{nome: "Ressentimento", peso: 5}, {nome: "Mágoa", peso: 4}], necessidades: [{nome: "Liberação emocional", peso: 5}, {nome: "Justiça", peso: 4}]},
+            {texto: "Sinto medo de ser rejeitado por ser quem eu sou.", sentimentos: [{nome: "Medo", peso: 5}, {nome: "Insegurança", peso: 5}], necessidades: [{nome: "Aceitação", peso: 5}, {nome: "Pertencimento", peso: 5}]},
+            {texto: "Me sinto energizado quando sou reconhecido por algo que fiz.", sentimentos: [{nome: "Alegria", peso: 5}, {nome: "Satisfação", peso: 4}], necessidades: [{nome: "Reconhecimento", peso: 5}, {nome: "Valor pessoal", peso: 4}]},
+            {texto: "Tenho prazer em compartilhar momentos significativos com outras pessoas.", sentimentos: [{nome: "Alegria", peso: 5}, {nome: "Afeto", peso: 4}], necessidades: [{nome: "Conexão", peso: 5}, {nome: "Companheirismo", peso: 4}]},
+            {texto: "Fico frustrado quando não consigo expressar o que sinto.", sentimentos: [{nome: "Frustração", peso: 5}, {nome: "Tristeza", peso: 4}], necessidades: [{nome: "Expressão emocional", peso: 5}, {nome: "Clareza", peso: 4}]},
+            {texto: "Sinto alegria quando estou em ambientes seguros e acolhedores.", sentimentos: [{nome: "Alegria", peso: 5}, {nome: "Tranquilidade", peso: 4}], necessidades: [{nome: "Segurança emocional", peso: 5}, {nome: "Acolhimento", peso: 4}]},
+            {texto: "Tenho medo de perder o controle sobre minhas emoções.", sentimentos: [{nome: "Medo", peso: 5}, {nome: "Ansiedade", peso: 4}], necessidades: [{nome: "Controle emocional", peso: 5}, {nome: "Estabilidade", peso: 4}]},
+            {texto: "Gosto de explorar o que estou sentindo, mesmo que seja desconfortável.", sentimentos: [{nome: "Coragem", peso: 5}, {nome: "Curiosidade", peso: 4}], necessidades: [{nome: "Autoconhecimento", peso: 5}, {nome: "Crescimento pessoal", peso: 4}]},
+            {texto: "Sinto que preciso esconder partes de mim para ser aceito.", sentimentos: [{nome: "Vergonha", peso: 5}, {nome: "Medo", peso: 4}], necessidades: [{nome: "Aceitação", peso: 5}, {nome: "Autenticidade", peso: 4}]},
+            {texto: "Me sinto em paz quando consigo entender o que se passa dentro de mim.", sentimentos: [{nome: "Paz", peso: 5}, {nome: "Satisfação", peso: 4}], necessidades: [{nome: "Compreensão interna", peso: 5}, {nome: "Autoconexão", peso: 4}]},
+            {texto: "Evito conflitos mesmo que isso me cause desconforto interno.", sentimentos: [{nome: "Medo", peso: 5}, {nome: "Angústia", peso: 4}], necessidades: [{nome: "Harmonia", peso: 5}, {nome: "Assertividade", peso: 4}]},
+            {texto: "Sinto gratidão por pequenas coisas do dia a dia.", sentimentos: [{nome: "Gratidão", peso: 5}, {nome: "Alegria", peso: 4}], necessidades: [{nome: "Presença / Apreciação", peso: 5}, {nome: "Leveza", peso: 4}]},
+            {texto: "Tenho dificuldade de aceitar elogios ou reconhecimento.", sentimentos: [{nome: "Vergonha", peso: 5}, {nome: "Desconforto", peso: 4}], necessidades: [{nome: "Reconhecimento", peso: 5}, {nome: "Validação", peso: 4}]}
+        ];
+
+        let currentQuestion = 0;
+        let responses = {};
+        let emotionScores = {};
+        let needScores = {};
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestion = 0;
+            responses = {};
+            showScreen('quiz');
+            loadQuestion();
+        }
+
+        function updateSliderValue() {
+            const slider = document.getElementById('sliderAnswer');
+            const value = (slider.value / 100).toFixed(2);
+            document.getElementById('sliderValue').textContent = value;
+            responses[currentQuestion] = parseFloat(value);
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('progressText').textContent = `Pergunta ${currentQuestion + 1} de ${questions.length}`;
+            document.getElementById('progressFill').style.width = ((currentQuestion + 1) / questions.length) * 100 + '%';
+            document.getElementById('questionText').textContent = q.texto;
+
+            const slider = document.getElementById('sliderAnswer');
+            
+            if (responses[currentQuestion] !== undefined) {
+                slider.value = Math.round(responses[currentQuestion] * 100);
+                document.getElementById('sliderValue').textContent = responses[currentQuestion].toFixed(2);
+            } else {
+                slider.value = 250;
+                document.getElementById('sliderValue').textContent = '2,50';
+            }
+
+            document.getElementById('btnPrev').style.display = currentQuestion > 0 ? 'block' : 'none';
+            document.getElementById('btnNext').style.display = currentQuestion < questions.length - 1 ? 'block' : 'none';
+            document.getElementById('btnFinish').style.display = currentQuestion === questions.length - 1 ? 'block' : 'none';
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            calculateScores();
+            showResults();
+            showScreen('results');
+        }
+
+        function calculateScores() {
+            emotionScores = {};
+            needScores = {};
+
+            questions.forEach((q, idx) => {
+                const val = responses[idx] || 2.5;
+                
+                // Processa sentimentos - soma pesos e valores de duplicatas
+                q.sentimentos.forEach(s => {
+                    if (!emotionScores[s.nome]) {
+                        emotionScores[s.nome] = 0;
+                    }
+                    emotionScores[s.nome] += val * s.peso;
+                });
+                
+                // Processa necessidades - soma pesos e valores de duplicatas
+                q.necessidades.forEach(n => {
+                    if (!needScores[n.nome]) {
+                        needScores[n.nome] = 0;
+                    }
+                    needScores[n.nome] += val * n.peso;
+                });
+            });
+
+            // Calcula máximo baseado na quantidade de vezes que cada item aparece
+            const emotionCounts = {};
+            const needCounts = {};
+            
+            questions.forEach(q => {
+                q.sentimentos.forEach(s => {
+                    emotionCounts[s.nome] = (emotionCounts[s.nome] || 0) + s.peso;
+                });
+                q.necessidades.forEach(n => {
+                    needCounts[n.nome] = (needCounts[n.nome] || 0) + n.peso;
+                });
+            });
+
+            // Normaliza para percentual (0-100%)
+            Object.keys(emotionScores).forEach(k => {
+                const maxValue = 5 * emotionCounts[k];
+                emotionScores[k] = Math.round((emotionScores[k] / maxValue) * 100);
+            });
+            
+            Object.keys(needScores).forEach(k => {
+                const maxValue = 5 * needCounts[k];
+                needScores[k] = Math.round((needScores[k] / maxValue) * 100);
+            });
+        }
+
+        function showResults() {
+            const top5emotions = Object.entries(emotionScores).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const top5needs = Object.entries(needScores).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            document.getElementById('emotionsResults').innerHTML = top5emotions.map((e, i) => `
+                <div class="result-item">
+                    <h3>#${i+1} - ${e[0]}</h3>
+                    <div class="score-bar"><div class="score-fill" style="width: ${e[1]}%"></div></div>
+                    <div class="percent">${e[1]}%</div>
+                </div>
+            `).join('');
+
+            document.getElementById('needsResults').innerHTML = top5needs.map((n, i) => `
+                <div class="result-item">
+                    <h3>#${i+1} - ${n[0]}</h3>
+                    <div class="score-bar"><div class="score-fill" style="width: ${n[1]}%"></div></div>
+                    <div class="percent">${n[1]}%</div>
+                </div>
+            `).join('');
+        }
+
+        function restartQuiz() {
+            showScreen('welcome');
+        }
+
+        function downloadResults() {
+            const top5emotions = Object.entries(emotionScores).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const top5needs = Object.entries(needScores).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+            let txt = "SEUS RESULTADOS PERSONALIZADOS\n";
+            txt += "================================\n\n";
+            txt += "TOP 5 SENTIMENTOS/ESTADOS:\n";
+            top5emotions.forEach((e, i) => { txt += `${i+1}. ${e[0]}: ${e[1]}%\n`; });
+            txt += "\nTOP 5 NECESSIDADES:\n";
+            top5needs.forEach((n, i) => { txt += `${i+1}. ${n[0]}: ${n[1]}%\n`; });
+            txt += "\nGerado em: " + new Date().toLocaleString("pt-BR");
+
+            const blob = new Blob([txt], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'resultados.txt';
+            a.click();
+        }
+    </script>
+</body>
+</html>
